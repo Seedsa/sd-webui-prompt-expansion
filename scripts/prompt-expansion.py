@@ -1,5 +1,6 @@
 import os
-from fastapi import FastAPI, Body
+from fastapi import FastAPI
+from pydantic import BaseModel
 import math
 
 import torch
@@ -100,10 +101,14 @@ def on_unload():
     current.model = None
     current.tokenizer = None
 
+class PromptRequest(BaseModel):
+    prompt: str = None
+    seed: int = -1
+
 def prompt_expansion(_: gr.Blocks, app: FastAPI):
     @app.post("/prompt_expansion")
-    async def expansion(prompt:str,seed:str):
-        result = generate(prompt,seed)
+    async def expansion(request:PromptRequest):
+        result = generate(request.prompt,request.seed)
         return  result
 
 script_callbacks.on_app_started(prompt_expansion)
